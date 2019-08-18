@@ -1,0 +1,34 @@
+Notas para le pdf (A ser pasadas latex)
+
+DEFINICION DEL PROBLEMA
+    Un cliente quiere tener una 'aplicacion' que le proporcione la informacion
+    del clima de dos ciudades, una de origen y la otra de destino.
+    Para esto la informacion entregada sera una cadena con el formato:
+      ORIGEN, DESTINO, LAT_ORG, LON_ORG, LAT_DES, LON_DES
+    El programa no necesita ser interactivo, y procesa minimo 3000 peticiones.
+
+ANALISIS DEL PROBLEMA
+  
+
+
+¿Como va a jalar este pedo?
+
+Necesitamos que sea asincrono.
+
+Pasos a seguir, platicados
+
+1. Lee el archivo, linea por linea, y cada vez que leas una linea (asincronamente),
+  haz una peticion con los datos que obtengas una vez que el sistema operativo responda,
+  igualmente asincronamente haz la peticion y cuando el server responda mete la respuesta
+  dentro de un objeto que sera nuestro cache.
+
+  Necesitamos:
+      Una funcion asincrona que lea archivos linea por linea, y una vez que termine de leer
+      cada linea, tire un evento para poder realizar la respectiva peticion.
+
+      Una funcion que maneje un caché para no realizar mas peticiones de las necesarias.
+      Si la peticion no fue hecha en menos de 5 minutos, entonces se debe actualizar la peticion.
+      De otra manera, solo se busca la info en el cache.
+
+      Una funcion que realice una peticion a un webService asincronamente, y cuando tenga
+      la repuesta del servidor tire un evento para que se agrege esta informacion al cache.
