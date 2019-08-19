@@ -2,7 +2,7 @@ const fs = require('fs');
 const readline = require('readline');
 const http = require('http');
 
-const dataRefreshRate = 3 * 60000 ; //minutes (x * 60000 ms)
+const dataRefreshRate = 15 * 60000 ; //minutes (x * 60000 ms)
 const defaultNoOfKeys = 59;
 let actualNoOfKeys = defaultNoOfKeys;
 let cityCache = {};
