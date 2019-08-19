@@ -2,7 +2,8 @@ const fs = require('fs');
 const readline = require('readline');
 const http = require('http');
 
-const dataRefreshRate = 15 * 60000 ; //minutes (x * 60000 ms)
+//Global variables
+const dataRefreshRate = 1.5 * 60000 ; //minutes (x * 60000 ms)
 const defaultNoOfKeys = 59;
 let actualNoOfKeys = defaultNoOfKeys;
 let cityCache = {};
@@ -68,7 +69,6 @@ function getWeatherOnce(city, callback) {
                 city.country = parsedData.sys.country;
                 city.cityName = parsedData.name;
                 totalPetits++;
-                console.log('Growing petits'+totalPetits);
                 callback(city);
             });
         }).on("error", (err) => {
