@@ -3,36 +3,60 @@ const readline = require('readline');
 const http = require('http');
 
 //Global variables
-const dataRefreshRate = 1.5 * 60000 ; //minutes (x * 60000 ms)
-const defaultNoOfKeys = 59;
-let actualNoOfKeys = defaultNoOfKeys;
-let cityCache = {};
-let totalPetits = 0;
+const dataRefreshRate = 10 * 60000 ; // z = minutes (z * 60000 ms)
+const defaultNoOfKeys = 59; //The maximum number of requests per minute.
+let actualNoOfKeys = defaultNoOfKeys; //The counter of available keys.
+let cityCache = {}; //The cache of cities.
+let totalRequests = 0; //The total number of requests.
 
-//Regresa un arreglo con las ciudades de origen - destino
+/**
+ * Reads a file, line by line, and callbacks by line.
+ *
+ * @async
+ * @function readCSVFileByLine
+ * @param {string} fileName The file to be read.
+ * @param {function(string)} callback The line just read in the file.
+ */
 function readCSVFileByLine(fileName, callback) {
-    let cities = [];
-    let petitionNum = 0;
     const rl = readline.createInterface({ input: fs.createReadStream(fileName) });
 
     rl.on('line', function(line) {
-        if (/([A-Z]{3},){2}(-?\d+\.?\d+,?){3}-?\d+\.?\d+/.test(line)) {
-            let part = line.split(',');
-            for (let i = 0; i <= 1; i++) {
-                petitionNum++;
-                cities[part[i]] = { id : part[i] };
-                cities[part[i]].lat =  part[2 + i*2];
-                cities[part[i]].lon =  part[3 + i*2];
-                cities[part[i]].petitionNum =  petitionNum;
-            }
-            callback(cities);
-            delete cities[part[0]];
-            delete cities[part[1]];
-        }
+        callback(line);
     });
 }
 
-function waitUntilKeyAvailable(callback){
+/**
+* Parses a string into an array of two city objects.
+*
+* @async
+* @function parseRawCities
+* @param {string} line The line to be read.
+* @param {function(array[city])} callback An array associative of two cities
+*                                         just parsed from the line.
+*/
+function parseRawCities(line, callback) {
+    let cities = [];
+    if (/([A-Z]{3},){2}(-?\d+\.?\d+,?){3}-?\d+\.?\d+/.test(line)) {
+        let part = line.split(',');
+        for (let i = 0; i <= 1; i++) {
+            cities[part[i]] = { id : part[i] };
+            cities[part[i]].lat =  part[2 + i*2];
+            cities[part[i]].lon =  part[3 + i*2];
+        }
+        callback(cities);
+        delete cities[part[0]];
+        delete cities[part[1]];
+    }
+}
+
+/**
+* Waits until an API key is available.
+*
+* @async
+* @function waitUntilKeyIsAvailable
+* @param {function()} callback Nothing, when a key is available.
+*/
+function waitUntilKeyIsAvailable(callback){
     if (actualNoOfKeys <= 0){
         let intvar =  setInterval(() => {
             if (actualNoOfKeys > 0) {
@@ -46,7 +70,14 @@ function waitUntilKeyAvailable(callback){
     }
 }
 
-//Checa el clima en la api de open weather asincronamente
+/**
+* Gets the weather from the openweather API.
+*
+* @async
+* @function getWeatherOnce
+* @param {city} city A city from which we will consult its properties.
+* @param {function(city)} callback A city with its properties consulted.
+*/
 function getWeatherOnce(city, callback) {
     const appid = '369594dfbf7562aa7eae28d55e9ad170';
     let originPath = '/data/2.5/weather?&units=metric';
@@ -55,7 +86,7 @@ function getWeatherOnce(city, callback) {
         path : originPath+= '&appid=' + appid +'&lat=' + city.lat + '&lon=' + city.lon,
     }
 
-    waitUntilKeyAvailable(() => {
+    waitUntilKeyIsAvailable(() => {
         http.get(options, (res) => {
             let rawData = '';
             res.on('data', (data) => {
@@ -63,12 +94,10 @@ function getWeatherOnce(city, callback) {
             });
             res.on('end', () => {
                 parsedData = JSON.parse(rawData);
-                // console.log(res.statusCode);
-                // console.log(parsedData);
                 city.temp = parsedData.main.temp + '°C';
                 city.country = parsedData.sys.country;
                 city.cityName = parsedData.name;
-                totalPetits++;
+                totalRequests++;
                 callback(city);
             });
         }).on("error", (err) => {
@@ -77,8 +106,14 @@ function getWeatherOnce(city, callback) {
     });
 }
 
-/*Busca una ciudad en el cache, si no esta, la mete al cache, si por el otro lado
- esta no esta, la mete al cache, regresa en un callback a la ciudad en el cache.
+/**
+* Looks for a city in the cache, if it's not there, it puts it in the cache
+* after consulting the API, if it's in the cache it just returns the city.
+*
+* @async
+* @function getIntoCache
+* @param {city} city A city to which we will consult if it is in cache.
+* @param {function(city)} callback The city after being updated in cache.
 */
 function getIntoCache(city, callback) {
     let id = city['id'];
@@ -96,7 +131,15 @@ function getIntoCache(city, callback) {
     }
 }
 
-function checkCache(cities, callback) {
+/**
+* Gets the properties of the two cities given by {cities}.
+*
+* @async
+* @function checkCacheForCityPairs
+* @param {array[city]} cities A couple of cities to get their information.
+* @param {function(array[cities])} callback An array of the two cities updated.
+*/
+function checkCacheForCityPairs(cities, callback) {
     let asinCheck = 0;
     let orig = Object.keys(cities)[0];
     let dest = Object.keys(cities)[1];
@@ -115,6 +158,12 @@ function checkCache(cities, callback) {
     }, 500);
 }
 
+/**
+* Prints a couple of cities origin - destiny.
+*
+* @function printDaCities
+* @param {array[city]} cities An array containing a pair of cities to be displayed.
+*/
 function printDaCities(cities) {
     let str = '';
     let toggle = 0;
@@ -133,11 +182,17 @@ function printDaCities(cities) {
         str += 'TEMP: ' + cities[id].temp + '\n';
     }
 
-    console.log('totalPetits: ', totalPetits);
+    console.log('totalRequests: ', totalRequests);
     console.log('actualNoOfKeys: ', actualNoOfKeys);
     console.log(str);
 }
 
+/**
+* Refreshes the cities in cache.
+*
+* @async
+* @function refreshCacheData
+*/
 function refreshCacheData() {
     for (let id in cityCache) {
         getWeatherOnce(cityCache[id], (city) => {
@@ -146,24 +201,27 @@ function refreshCacheData() {
     }
 }
 
-//To regfresh the cache
+//Interval to regfresh the cache.
 setInterval(() => {
     refreshCacheData();
 }, dataRefreshRate);
 
-//To regfresh the available keys every minute
+//interval to regfresh the available keys every minute.
 setInterval(() => {
     actualNoOfKeys = defaultNoOfKeys;
 }, 60000);
 
 //This is basically the main asincronus function
-readCSVFileByLine('dataset.csv', (cities) => {
-    checkCache(cities, (fulledCities) => {
-        printDaCities(fulledCities);
-        setInterval(() => {
+readCSVFileByLine('dataset.csv', (line) => {
+    parseRawCities(line, (cities) => {
+        checkCacheForCityPairs(cities, (fulledCities) => {
             printDaCities(fulledCities);
-        }, 60000);
+            setInterval(() => {
+                printDaCities(fulledCities);
+            }, 60000);
+        });
     });
 });
 
-console.log("This should apear at the begining");
+//Nice line to check that everything is working asynchronously.
+console.log("This should apear at the begining, now keep going");
