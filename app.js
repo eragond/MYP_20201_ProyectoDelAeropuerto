@@ -3,11 +3,13 @@ const readline = require('readline');
 const http = require('http');
 
 //Global variables
-const dataRefreshRate = 10 * 60000 ; // z = minutes (z * 60000 ms)
-const defaultNoOfKeys = 59; //The maximum number of requests per minute.
+const dataRefreshRate = 10 * 60000 ;  // z = minutes (z * 60000 ms)
+const defaultNoOfKeys = 59;           //The maximum number of requests per minute.
 let actualNoOfKeys = defaultNoOfKeys; //The counter of available keys.
-let cityCache = {}; //The cache of cities.
-let totalRequests = 0; //The total number of requests.
+let cityCache = {};                   //The cache of cities.
+let totalRequests = 0;                //The total number of requests.
+
+//FUNCTION DECLARATION
 
 /**
  * Reads a file, line by line, and callbacks by line.
@@ -36,6 +38,7 @@ function readCSVFileByLine(fileName, callback) {
 */
 function parseRawCities(line, callback) {
     let cities = [];
+    //Regex to verify if the string can be parsed into a city.
     if (/([A-Z]{3},){2}(-?\d+\.?\d+,?){3}-?\d+\.?\d+/.test(line)) {
         let part = line.split(',');
         for (let i = 0; i <= 1; i++) {
@@ -94,14 +97,17 @@ function getWeatherOnce(city, callback) {
             });
             res.on('end', () => {
                 parsedData = JSON.parse(rawData);
-                city.temp = parsedData.main.temp + '°C';
-                city.country = parsedData.sys.country;
-                city.cityName = parsedData.name;
+                city.temp = parsedData.hasOwnProperty('main') ?
+                            parsedData.main.temp + '°C' : undefined;
+                city.country = parsedData.hasOwnProperty('sys') ?
+                               parsedData.sys.country : undefined;
+                city.cityName = parsedData.hasOwnProperty('name') ?
+                                parsedData.name : undefined;
                 totalRequests++;
                 callback(city);
             });
         }).on("error", (err) => {
-            console.error("Error malo: " + err.message);
+            console.error("Sum bad thing happened: " + err.message);
         });
     });
 }
@@ -118,14 +124,14 @@ function getWeatherOnce(city, callback) {
 function getIntoCache(city, callback) {
     let id = city['id'];
 
-    if (cityCache[id] == undefined) { //Si no esta en el cache
+    if (cityCache[id] == undefined) {     //If it is not in the cache.
         cityCache[id] = city;
         getWeatherOnce(city, (city) => {
-            cityCache[id] = city; //Lo metemos al cache
+            cityCache[id] = city;         //We put it in the cache.
             callback(city);
         });
-    } else { //Si si esta en el cache
-        setTimeout(() => {
+    } else {                              //If it is in the cache.
+        setTimeout(() => {                //Just return it.
             callback(cityCache[id]);
         }, 500)
     }
@@ -148,7 +154,7 @@ function checkCacheForCityPairs(cities, callback) {
         asinCheck++;
         getIntoCache(cities[id], (city) => { asinCheck--; });
     }
-
+    //Interval to wait until both cities are defined.
     let inter = setInterval(() => {
         if (asinCheck == 0) {
             let regresa = [cityCache[orig], cityCache[dest]];
@@ -181,16 +187,15 @@ function printDaCities(cities) {
         str += 'LON: ' + cities[id].lon + '\t';
         str += 'TEMP: ' + cities[id].temp + '\n';
     }
-
+    // TODO: REMOVE extra logs.
     console.log('totalRequests: ', totalRequests);
     console.log('actualNoOfKeys: ', actualNoOfKeys);
     console.log(str);
 }
 
 /**
-* Refreshes the cities in cache.
+* Refreshes the data of the cities in cache.
 *
-* @async
 * @function refreshCacheData
 */
 function refreshCacheData() {
@@ -201,17 +206,19 @@ function refreshCacheData() {
     }
 }
 
-//Interval to regfresh the cache.
+//ASYNCHRONOUS MAIN EXECUTION THREAD
+
+//Interval to refresh the cache.
 setInterval(() => {
     refreshCacheData();
 }, dataRefreshRate);
 
-//interval to regfresh the available keys every minute.
+//Interval to refresh the available keys, every minute.
 setInterval(() => {
     actualNoOfKeys = defaultNoOfKeys;
-}, 60000);
+}, 60000); //Every minute.
 
-//This is basically the main asincronus function
+//This is basically the main asincronus function. Srry for the callback hell.
 readCSVFileByLine('dataset.csv', (line) => {
     parseRawCities(line, (cities) => {
         checkCacheForCityPairs(cities, (fulledCities) => {
@@ -223,5 +230,6 @@ readCSVFileByLine('dataset.csv', (line) => {
     });
 });
 
+// TODO: REMOVE THIS LASTS LINES.
 //Nice line to check that everything is working asynchronously.
 console.log("This should apear at the begining, now keep going");
