@@ -107,7 +107,11 @@ function getWeatherOnce(city, callback) {
                 callback(city);
             });
         }).on("error", (err) => {
-            console.error("Sum bad thing happened: " + err.message);
+            console.error('Sum bad thing happened with', city , err.message);
+            console.log('Retrying to get info...');
+            setTimeout(() => {
+                getWeatherOnce(city, callback);
+            }, 5000);
         });
     });
 }
@@ -219,7 +223,7 @@ setInterval(() => {
 }, 60000); //Every minute.
 
 //This is basically the main asincronus function. Srry for the callback hell.
-readCSVFileByLine('dataset.csv', (line) => {
+readCSVFileByLine('dataset3.csv', (line) => {
     parseRawCities(line, (cities) => {
         checkCacheForCityPairs(cities, (fulledCities) => {
             printDaCities(fulledCities);
