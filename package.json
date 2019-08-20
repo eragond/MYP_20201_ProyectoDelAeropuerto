@@ -4,6 +4,7 @@
   "description": "El proyecto donde obtenemos el tiempo de una api, y para hacerlo mas complicado gustamos de hacerlo asincronamente, Yay!.",
   "main": "app.js",
   "scripts": {
+    "start": "node .",
     "test": "node .",
     "dev": "nodemon ."
   },
