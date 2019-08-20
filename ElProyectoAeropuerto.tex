@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass{report}
 \usepackage[utf8]{inputenc}
 
 \title{El problema del aeropuerto}
@@ -6,7 +6,6 @@
 \date{Agosto 2019}
 
 \usepackage{natbib}
-\usepackage{graphicx}
 
 \begin{document}
 
@@ -20,11 +19,12 @@ ORIGEN, DESTINO, LAT-ORG, LON-ORG, LAT-DES, LON-DES
 El programa no necesita ser interactivo, y procesa mínimo 3000 peticiones.
 
 \section{Análisis del problema}
-El cliente necesita un programa que procese múltiples peticiones, y nos ha dado un archivo, donde cada linea representa una petición a ser respondida.
+El cliente necesita un programa que procese múltiples peticiones, y nos ha dado un archivo, donde cada linea representa una petición a ser respondida. \\
 Necesidades:
-Manejar múltiples peticiones a la vez, dando favor al uso de concurrencia.
-Una API que brinde los recursos del clima en un tiempo definido.
-
+\begin{itemize}
+\item Manejar múltiples peticiones a la vez, dando favor al uso de concurrencia.
+\item Una API que brinde los recursos del clima en un tiempo definido.
+\end{itemize}
 \section{Selección de alternativas}
 \begin{itemize}
 \item Lenguaje y entorno de ejecución:\\
@@ -56,6 +56,32 @@ La prioridad es que todo sea concurrente (JavaScript solo soporta asincronía, n
 
         \item (6A) Asíncronamente refrescamos cada 15 minutos los datos de cada ciudad dentro del cache
     \end{itemize}
+
+\section{Pensando a futuro}
+
+\begin{enumerate}
+    \item \textbf{Mantenimiento}\\
+        A futuro, se podría mejorar el programa al este ser integrado como un servicio web, donde se hacen peticiones reales a un servidor. Ya que al manejar concurrencia el programa es capaz de soportar múltiples peticiones.
+        El mantenimiento en si, seria la integración con mas servicios, para que este programa funcionase como un modulo libre disponible al publico.
+    \item \textbf{Costo del proyecto}\\
+        Ya que el tiempo de desarrollo fue relativamente poco, pero el tiempo de documentación fue bastante, el costo seria:\\
+        Unos \$229.97 mxn y unos tacos de pastor (orden de 6).
+    \item \textbf{Costos del mantenimiento}\\
+        Dependiendo de las necesidades del mantenimiento, el costo base serian unos \$107 mxn y unos sabritones, mas extra dependiendo del tipo de mantenimiento.
+    \item \textbf{Pensamientos generales}\\
+        El proyecto estuvo bien, el reto de hacerlo concurrente fue lo que le dio la dificultad real, ya que no estaba acostumbrado a hacer esto desde hace tiempo, sin embargo el hecho de usar concurrencia apoya a que el proyecto pueda ser escalado a mas a futuro.\\
+        Además decidí no usar módulos diferentes a los estándar de Node, en pro de la compatibilidad, lo que al final hizo todo un tanto mas difícil, pero mas divertido. Aunado a esto decidí no usar promesas ni funciones async-await, sino solo callbacks, a la antigua, lo que fue una decisión horrible, pero he aprendido que a día de hoy y con las necesidades actuales, el uso de solo callbacks solo hace que el código sea un tanto mas enrevesado y se tengan que idear artimañas innecesarias para hacer cosas que con las promesas ya están resueltas. \\
+        El tiempo estimado que tome en realizar este proyecto fue:
+        \begin{itemize}
+            \item 2 hrs de modelado del problema.
+            \item 8 hrs de investigación sobre el lenguaje.
+            \item 2 hrs para programar lo principal.
+            \item 2 hrs para testing.
+            \item 4 hrs de documentación.
+        \end{itemize}
+        No se si debería de incluir esto dentro del reporte, pero lo incluiré de todos modos, si hay algún problema, lo corregiré para futuros proyectos.\\
+        Gracias.
+\end{enumerate}
 
 
 \end{document}

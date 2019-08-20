@@ -2,7 +2,7 @@ const fs = require('fs');
 const readline = require('readline');
 const http = require('http');
 
-//Global variables
+//GLOBAL VARIABLES
 const dataRefreshRate = 10 * 60000 ;  // z = minutes (z * 60000 ms)
 const defaultNoOfKeys = 59;           //The maximum number of requests per minute.
 let actualNoOfKeys = defaultNoOfKeys; //The counter of available keys.
@@ -223,7 +223,7 @@ setInterval(() => {
 }, 60000); //Every minute.
 
 //This is basically the main asincronus function. Srry for the callback hell.
-readCSVFileByLine('dataset3.csv', (line) => {
+readCSVFileByLine('dataset.csv', (line) => {
     parseRawCities(line, (cities) => {
         checkCacheForCityPairs(cities, (fulledCities) => {
             printDaCities(fulledCities);
