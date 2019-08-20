@@ -1,5 +1,0 @@
-
-> tiempoenjavascript@1.0.0 test /home/eragond/Documentos/3erSem/ModeladoGalaviz/ElTiempoDelAvion/EnJavaScript
-> node .
-
-This should apear at the begining
