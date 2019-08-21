@@ -15,11 +15,6 @@ Clone el proyecto con
 git clone https://github.com/eragond/MYP_20201_ProyectoDelAeropuerto
 ```
 
-Instale el proyecto con
-
-```bash
-npm install
-```
 ## Uso
 
 Corra el proyecto con
