@@ -237,9 +237,6 @@ if (require.main === module) {
     });
 }
 
-// TODO: REMOVE THIS LASTS LINES.
-//Nice line to check that everything is working asynchronously.
-console.log("This should apear at the begining, now keep going");
 
 //Modules to export.
 WeatherApp = {};
