@@ -37,7 +37,7 @@ function readCSVFileByLine(fileName, callback) {
 *                                         just parsed from the line.
 */
 function parseRawCities(line, callback) {
-    let cities = [];
+    let cities = {};
     //Regex to verify if the string can be parsed into a city.
     if (/([A-Z]{3},){2}(-?\d+\.?\d+,?){3}-?\d+\.?\d+/.test(line)) {
         let part = line.split(',');
@@ -193,7 +193,7 @@ function printDaCities(cities) {
     }
     // TODO: REMOVE extra logs.
     console.log('totalRequests: ', totalRequests);
-    console.log('actualNoOfKeys: ', actualNoOfKeys);
+    console.log('actualNoOfKeysAvailable: ', actualNoOfKeys);
     console.log(str);
 }
 
@@ -212,28 +212,38 @@ function refreshCacheData() {
 
 //ASYNCHRONOUS MAIN EXECUTION THREAD
 
-//Interval to refresh the cache.
-setInterval(() => {
-    refreshCacheData();
-}, dataRefreshRate);
+//To execute if not imported as a module.
+if (require.main === module) {
+    //Interval to refresh the cache.
+    setInterval(() => {
+        refreshCacheData();
+    }, dataRefreshRate);
 
-//Interval to refresh the available keys, every minute.
-setInterval(() => {
-    actualNoOfKeys = defaultNoOfKeys;
-}, 60000); //Every minute.
+    //Interval to refresh the available keys, every minute.
+    setInterval(() => {
+        actualNoOfKeys = defaultNoOfKeys;
+    }, 60000); //Every minute.
 
-//This is basically the main asincronus function. Srry for the callback hell.
-readCSVFileByLine('dataset.csv', (line) => {
-    parseRawCities(line, (cities) => {
-        checkCacheForCityPairs(cities, (fulledCities) => {
-            printDaCities(fulledCities);
-            setInterval(() => {
+    //This is basically the main asincronus function. Srry for the callback hell.
+    readCSVFileByLine('src/dataset.csv', (line) => {
+        parseRawCities(line, (cities) => {
+            checkCacheForCityPairs(cities, (fulledCities) => {
                 printDaCities(fulledCities);
-            }, 60000);
+                setInterval(() => {
+                    printDaCities(fulledCities);
+                }, 60000);
+            });
         });
     });
-});
+}
 
 // TODO: REMOVE THIS LASTS LINES.
 //Nice line to check that everything is working asynchronously.
 console.log("This should apear at the begining, now keep going");
+
+//Modules to export.
+WeatherApp = {};
+WeatherApp.readCSVFileByLine = readCSVFileByLine;
+WeatherApp.parseRawCities = parseRawCities;
+
+module.exports = WeatherApp;

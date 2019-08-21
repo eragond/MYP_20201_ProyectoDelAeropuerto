@@ -1,12 +1,12 @@
 {
-  "name": "tiempoenjavascript",
+  "name": "weatherapp",
   "version": "1.0.0",
   "description": "El proyecto donde obtenemos el tiempo de una api, y para hacerlo mas complicado gustamos de hacerlo asincronamente, Yay!.",
-  "main": "app.js",
+  "main": "src/WeatherApp.js",
   "scripts": {
-    "start": "node .",
-    "test": "node .",
-    "dev": "nodemon ."
+    "start": "node src/WeatherApp.js",
+    "test": "node test/test.js",
+    "dev": "nodemon src/WeatherApp.js"
   },
   "keywords": [
     "api",
